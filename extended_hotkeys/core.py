@@ -2,6 +2,8 @@ import sys
 import types
 import uuid
 
+import nuke
+
 try:
     from Qt import QtCore
 except ImportError:
@@ -41,6 +43,12 @@ def __anonymous(text):
     return eval(py2_src)
 
 
+def __item_invoke(item):
+    def __item_invoke_handler():
+        return item.invoke()
+    return __item_invoke_handler
+
+
 def __sanitize_commands(command_list):
     sanitized = []
     if not hasattr(command_list, "__iter__"):
@@ -52,6 +60,8 @@ def __sanitize_commands(command_list):
             sanitized.append(command)
         elif isinstance(command, basestring):
             sanitized.append(__anonymous(command))
+        elif isinstance(command, nuke.Menu):
+            sanitized.append(__item_invoke(command))
     return sanitized
 
 
