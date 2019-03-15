@@ -126,6 +126,8 @@ def make_multiple_hotkey_factory(callback_list, timeout=1000, fast_exit=True):
             if __get_global_value(key) == TIMER_UNSET:
                 # We haven't started a timer. This must be our first keypress.
                 __set_global_value(key, TIMER_RUNNING)
+                if len(callback_list) > len(callback_stack):
+                    callback_stack.append(callback_list[len(callback_stack)])
                 timer.singleShot(timeout, __bound_timeout_handler(key, callback_stack, callback_list))
             elif __get_global_value(key) == TIMER_RUNNING:
                 # We need to add our latest callback to the stack
