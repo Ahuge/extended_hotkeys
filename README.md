@@ -14,6 +14,7 @@ I came up with a system that would allow him to press the `1` key once and have 
 I later expanded this into a more generic system that would allow you to have as many extra functions as you want.  
 That system is now **ExtendedHotkeys**
 
+![demo.gif](.github/demo.gif)
 
 ## How do I use it
 If you load the extended_hotkeys `init.py` file, it will add itself to the `nuke` module as `nuke.addExtendedCommand`
