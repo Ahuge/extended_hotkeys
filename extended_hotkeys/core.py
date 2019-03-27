@@ -32,15 +32,11 @@ TIMER_UNSET = -1
 
 
 def __anonymous(text):
-    py2_src = """def __():
-        exec \"{text}\"""".format(text=text)
+    src = """def __():
+        {text}""".format(text=text)
 
-    py3_src = """def __():
-    exec(\"{text}\")""".format(text=text)
-
-    if sys.version_info[0] > 2:
-        return eval(py3_src)
-    return eval(py2_src)
+    exec(src)
+    return locals()["__"]
 
 
 def __item_invoke(item):
