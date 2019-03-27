@@ -149,7 +149,7 @@ def make_multiple_hotkey_factory(callback_list, timeout=1000, fast_exit=True):
                 # Timer is set to an unknown value! Set it to UNSET and hope it doesn't get changed again.
                 __set_global_value(key, TIMER_UNSET)
                 __clear_list(callback_stack)
-
+    __set_global_value(key, TIMER_UNSET)
     return multiple_hotkey_manager
 
 
