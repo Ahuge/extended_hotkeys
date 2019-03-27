@@ -32,15 +32,11 @@ TIMER_UNSET = -1
 
 
 def __anonymous(text):
-    py2_src = """def __():
-        exec \"{text}\"""".format(text=text)
+    src = """def __():
+        {text}""".format(text=text)
 
-    py3_src = """def __():
-    exec(\"{text}\")""".format(text=text)
-
-    if sys.version_info[0] > 2:
-        return eval(py3_src)
-    return eval(py2_src)
+    exec(src)
+    return locals()["__"]
 
 
 def __item_invoke(item):
@@ -157,7 +153,7 @@ def make_multiple_hotkey_factory(callback_list, timeout=1000, fast_exit=True):
     return multiple_hotkey_manager
 
 
-def addExtendedCommand(menu, name, commands, shortcut=None, icon=None, tooltip=None, index=None, readonly=None, shortcutContext=None, timeout=1000):
+def addExtendedCommand(menu, name, commands, shortcut=None, icon=None, tooltip="", index=-1, readonly=False, shortcutContext=None, timeout=1000):
     """
 addExtendedCommand(...)
     self.addCommand(name, command, shortcut, icon, tooltip, index, readonly) -> The menu/toolbar item that was added to hold the command.
@@ -185,14 +181,24 @@ addExtendedCommand(...)
         output_command = sanitized_commands[0]
     else:
         output_command = make_multiple_hotkey_factory(sanitized_commands, timeout=timeout)
+
+    kwargs = {}
+    if shortcut:
+        kwargs["shortcut"] = shortcut
+    if icon:
+        kwargs["icon"] = icon
+    if tooltip:
+        kwargs["tooltip"] = tooltip
+    if index != -1:
+        kwargs["index"] = index
+    if readonly is not False:
+        kwargs["readonly"] = readonly
+    if shortcutContext is not None:
+        kwargs["shortcutContext"] = shortcutContext
+
     return menu.addCommand(
         name,
         output_command,
-        shortcut=shortcut,
-        icon=icon,
-        tooltip=tooltip,
-        index=index,
-        readonly=readonly,
-        shortcutContext=shortcutContext
+        **kwargs
     )
 

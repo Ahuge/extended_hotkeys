@@ -1,3 +1,5 @@
+import nuke
+import nukescripts
 VIEWER_INPUT_PROXY = "Viewer/Input/"
 
 def viewer_hotkey(number):
@@ -46,7 +48,7 @@ def jump_to_input(number):
     jump_to_input takes an input number and when called will center 
       your viewer on whichever node your viewer is connected to at index <number>
 
-    :param number: The 0 indexed number corresponding to the input you want
+    :param number: The 1 indexed number corresponding to the input you want
     :type number: int
     :return: A lazy function that will evaluate the input at index <index> when called.
     :rettype: types.FunctionType
@@ -56,7 +58,7 @@ def jump_to_input(number):
             node.setSelected(False)
 
         viewer = nuke.activeViewer()
-        viewer.node().input(number).setSelected(True)
+        viewer.node().input(number-1).setSelected(True)
         nuke.zoomToFitSelected()
 
     return jump_to_handler
