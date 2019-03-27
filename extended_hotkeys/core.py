@@ -2,6 +2,8 @@ import sys
 import types
 import uuid
 
+import nuke
+
 try:
     from Qt import QtCore
 except ImportError:
@@ -41,6 +43,12 @@ def __anonymous(text):
     return eval(py2_src)
 
 
+def __item_invoke(item):
+    def __item_invoke_handler():
+        return item.invoke()
+    return __item_invoke_handler
+
+
 def __sanitize_commands(command_list):
     sanitized = []
     if not hasattr(command_list, "__iter__"):
@@ -52,7 +60,14 @@ def __sanitize_commands(command_list):
             sanitized.append(command)
         elif isinstance(command, basestring):
             sanitized.append(__anonymous(command))
+        elif isinstance(command, nuke.Menu):
+            sanitized.append(__item_invoke(command))
     return sanitized
+
+
+def __clear_list(list_obj):
+    for _ in list_obj[:]:
+        list_obj.remove(_)
 
 
 def __bound_timeout_handler(key, callback_stack, callback_list):
@@ -73,8 +88,7 @@ def __bound_timeout_handler(key, callback_stack, callback_list):
             callback = callback_stack.pop(-1)
 
             # Clear the callback stack
-            for unused_callback in callback_stack[:]:
-                callback_stack.remove(unused_callback)
+            __clear_list(callback_stack)
 
             # Call the latest callback.
             __set_global_value(key, TIMER_UNSET)
@@ -97,7 +111,7 @@ def __get_global_value(key):
     return globals().get(key)
 
 
-def make_multiple_hotkey_factory(callback_list, timeout=1000):
+def make_multiple_hotkey_factory(callback_list, timeout=1000, fast_exit=True):
     key = uuid.uuid4()
     timer = QtCore.QTimer(QtCore.QCoreApplication.instance())
     callback_stack = []
@@ -106,18 +120,26 @@ def make_multiple_hotkey_factory(callback_list, timeout=1000):
         if len(callback_list) == 1:
             # No need for a timer, we can just call the only one.
             callback_list[0]()
+            __clear_list(callback_stack)
         else:
             # Start our callback logic.
             if __get_global_value(key) == TIMER_UNSET:
                 # We haven't started a timer. This must be our first keypress.
                 __set_global_value(key, TIMER_RUNNING)
+                if len(callback_list) > len(callback_stack):
+                    callback_stack.append(callback_list[len(callback_stack)])
                 timer.singleShot(timeout, __bound_timeout_handler(key, callback_stack, callback_list))
             elif __get_global_value(key) == TIMER_RUNNING:
                 # We need to add our latest callback to the stack
                 if len(callback_list) > len(callback_stack):
                     callback_stack.append(callback_list[len(callback_stack)])
+                elif len(callback_list) == len(callback_stack) and fast_exit is True:
+                    # We are at the last callback and we have been asked to fast_exit. We should call our callback now.
+                    __set_global_value(key, TIMER_UNSET)
+                    __clear_list(callback_stack)
+                    callback_list[-1]()
                 else:
-                    # Should not get here
+                    # We may get here if we press the hotkey too much and we don't want to fast_exit.
                     print(
                         "Hotkey pressed %d times but only %d callbacks registered for the hotkey."
                         % (len(callback_stack), len(callback_list))
@@ -130,6 +152,7 @@ def make_multiple_hotkey_factory(callback_list, timeout=1000):
             else:
                 # Timer is set to an unknown value! Set it to UNSET and hope it doesn't get changed again.
                 __set_global_value(key, TIMER_UNSET)
+                __clear_list(callback_stack)
 
     return multiple_hotkey_manager
 
