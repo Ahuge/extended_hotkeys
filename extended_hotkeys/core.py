@@ -157,7 +157,7 @@ def make_multiple_hotkey_factory(callback_list, timeout=1000, fast_exit=True):
     return multiple_hotkey_manager
 
 
-def addExtendedCommand(menu, name, commands, shortcut=None, icon=None, tooltip=None, index=None, readonly=None, shortcutContext=None, timeout=1000):
+def addExtendedCommand(menu, name, commands, shortcut=None, icon=None, tooltip="", index=-1, readonly=False, shortcutContext=0, timeout=1000):
     """
 addExtendedCommand(...)
     self.addCommand(name, command, shortcut, icon, tooltip, index, readonly) -> The menu/toolbar item that was added to hold the command.
