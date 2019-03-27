@@ -1,3 +1,5 @@
+import nuke
+import nukescripts
 VIEWER_INPUT_PROXY = "Viewer/Input/"
 
 def viewer_hotkey(number):
